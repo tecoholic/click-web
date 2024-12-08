@@ -113,7 +113,8 @@ class Executor:
         process = subprocess.Popen(self._command_line.get_commandline(),
                                    shell=False,
                                    stdout=subprocess.PIPE,
-                                   stderr=subprocess.STDOUT)
+                                   stderr=subprocess.STDOUT,
+                                   env=dict(os.environ))
         logger.info('script running Pid: %d', process.pid)
 
         encoding = sys.getdefaultencoding()
