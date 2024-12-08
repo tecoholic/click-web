@@ -8,8 +8,11 @@ import click_web
 
 
 def index():
-    with click.Context(click_web.click_root_cmd, info_name=click_web.click_root_cmd.name, parent=None) as ctx:
-        return render_template('show_tree.html.j2', ctx=ctx, tree=_click_to_tree(ctx, click_web.click_root_cmd))
+    if not click_web.click_context:
+        ctx = click.Context(click_web.click_root_cmd, info_name=click_web.click_root_cmd.name, parent=None)
+    else:
+        ctx = click_web.click_context
+    return render_template('show_tree.html.j2', ctx=ctx, tree=_click_to_tree(ctx, click_web.click_root_cmd))
 
 
 def _click_to_tree(ctx: click.Context, node: Union[click.Command, click.MultiCommand], ancestors: list = None):

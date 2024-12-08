@@ -15,6 +15,8 @@ jinja_env = jinja2.Environment(extensions=['jinja2.ext.do'])
 script_file = None
 'The click root command to serve'
 click_root_cmd = None
+'The click Context of the CLI. This is useful when the web ui is made a part of the cli itself.'
+click_context = None
 
 
 def _get_output_folder():
@@ -31,7 +33,7 @@ _flask_app = None
 logger = None
 
 
-def create_click_web_app(module, command: click.BaseCommand, root='/'):
+def create_click_web_app(module, command: click.BaseCommand, root='/', context: click.Context | None = None):
     """
     Create a Flask app that wraps a click command. (Call once)
 
@@ -51,7 +53,7 @@ def create_click_web_app(module, command: click.BaseCommand, root='/'):
     global _flask_app, logger
     assert _flask_app is None, "Flask App already created."
 
-    _register(module, command)
+    _register(module, command, context)
 
     _flask_app = Flask(__name__, static_url_path=root.rstrip('/') + '/static')
 
@@ -78,13 +80,14 @@ def create_click_web_app(module, command: click.BaseCommand, root='/'):
     return _flask_app
 
 
-def _register(module, command: click.BaseCommand):
+def _register(module, command: click.BaseCommand, context: click.Context | None):
     """
 
     :param module: the module that contains the command, needed to get the path to the script.
     :param command: The actual click root command, needed to be able to read the command tree and arguments
                     in order to generate the index page and the html forms
     """
-    global click_root_cmd, script_file
+    global click_root_cmd, script_file, click_context
     script_file = str(Path(module.__file__).absolute())
     click_root_cmd = command
+    click_context = context
