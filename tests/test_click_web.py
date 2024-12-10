@@ -278,6 +278,17 @@ def test_get_custom_input_field_type(ctx, cli, param, expected, command_index):
           'required': True,
           'type': 'text',
           'value': "test-value"}),
+        (click.Argument(["env-set", ], envvar=["UNUSED_ENVVAR", "TEST_VAR"]), {"TEST_VAR": "test-value"},
+         {'checked': '',
+          'click_type': 'text',
+          'help': '',
+          'human_readable_name': 'ENV SET',
+          'name': '0.0.argument.text.1.text.env-set',
+          'nargs': 1,
+          'param': 'argument',
+          'required': True,
+          'type': 'text',
+          'value': "test-value"}),
     ])
 def test_parse_envvar_for_input_field_values(ctx, cli, param, envvar, expected):
     os.environ.update(envvar)
