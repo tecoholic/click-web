@@ -1,4 +1,5 @@
 import os
+
 import click
 
 from click_web.web_click_types import (EmailParamType, PasswordParamType,
@@ -80,37 +81,37 @@ class BaseInput:
         field = {}
         param = self.param
 
-        def get_default_value():
+        def get_initial_value():
+            """Returns the initial value for the field. This could be the default value of the flag or a value based
+            on the `envvar` set for the option/argument in the click command.
+            """
             value = param.default
+            if not param.envvar:
+                return value
+
+            if isinstance(param.envvar, str):
+                return os.environ.get(param.envvar)
+
             # NOTE: click allows setting the envvar value to be just a string or a list of strings
             # However, there is no documented use of mulitple envvar being used. Only multiple values
-            # being passed to the envvar[1]. So, this function, just parses the first non-empty value for
+            # being passed to the envvar. So, this function, just parses the first non-empty value for
             # a list of envvars, and passes the string as-is to the cli in case or multiple-values.
-            #
-            # [1]: https://github.com/pallets/click/blob/5961d31fb566f089ad468a5b26a32f1ebfa7f63e/tests/test_options.py#L214
-            if param.envvar:
-                if isinstance(param.envvar, str) and os.environ.get(param.envvar, None):
-                    value = os.environ[param.envvar]
-                else:
-                    # This pulls the first valid value from the list of envvars
-                    try:
-                        value = next((os.environ[var] for var in param.envvar if os.environ.get(var, None)), value)
-                    except TypeError:
-                        # this must be a sequence, in case it isn't, there would be TypeError
-                        pass
-
-            return value or ''
+            try:
+                return next((os.environ[var] for var in param.envvar if os.environ.get(var, None)), value)
+            except TypeError:
+                # this must be a sequence, in case it isn't, there would be TypeError
+                return value
 
         field['param'] = param.param_type_name
         if param.param_type_name == 'option':
             name = self._to_cmd_line_name(param.opts[0])
-            field['value'] = get_default_value()
+            field['value'] = get_initial_value() or ''
             field['checked'] = 'checked="checked"' if param.default else ''
             field['desc'] = param.help
             field['help'] = param.get_help_record(self.ctx)
         elif param.param_type_name == 'argument':
             name = self._to_cmd_line_name(param.name)
-            field['value'] = get_default_value()
+            field['value'] = get_initial_value()
             field['checked'] = ''
             field['help'] = ''
 
